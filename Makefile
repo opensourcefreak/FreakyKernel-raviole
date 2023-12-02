@@ -2,7 +2,11 @@
 VERSION = 5
 PATCHLEVEL = 10
 SUBLEVEL = 157
-EXTRAVERSION =
+EXTRAVERSION = -FreakyKernel-raviole_V1.0-ALPHA
+# ALPHA = For testing by me only
+# BETA = Builds for bugsquashing that i will make publicly avalible
+# RELEASE = Release builds
+
 NAME = Dare mighty things
 
 # *DOCUMENTATION*
