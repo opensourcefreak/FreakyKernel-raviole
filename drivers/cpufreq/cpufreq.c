@@ -32,6 +32,8 @@
 #include <trace/events/power.h>
 #include <trace/hooks/cpufreq.h>
 
+unsigned int enable_oc = 0;
+
 #define LITTLE_DEFAULT_FREQ 1803000
 #define MIDDLE_DEFAULT_FREQ 2253000
 #define BIG_DEFAULT_FREQ 2802000
@@ -603,6 +605,9 @@ EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
 /*********************************************************************
  *                          SYSFS INTERFACE                          *
  *********************************************************************/
+
+module_param(enable_oc, int, 0644);
+
 static ssize_t show_boost(struct kobject *kobj,
 			  struct kobj_attribute *attr, char *buf)
 {
@@ -716,21 +721,6 @@ show_one(cpuinfo_min_freq, cpuinfo.min_freq);
 show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
 show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
-show_one(enable_oc, enable_oc);
-
-static ssize_t store_enable_oc
-(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int val;
-	int ret;
-
-	ret = sscanf(buf, "%u", &val);
-	if (ret != 1)
-		return -EINVAL;
-
-	policy->enable_oc = val;
-	return 0;
-}
 
 __weak unsigned int arch_freq_get_on_cpu(int cpu)
 {
@@ -961,7 +951,6 @@ cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
-cpufreq_freq_attr_rw(enable_oc);
 
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
@@ -975,7 +964,6 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
-	&enable_oc.attr,
 	NULL
 };
 
@@ -2502,7 +2490,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	struct cpufreq_policy_data new_data;
 	struct cpufreq_governor *old_gov;
 	int ret;
-	unsigned int enable_oc;
 
 	memcpy(&new_data.cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 	new_data.freq_table = policy->freq_table;
@@ -2528,7 +2515,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	policy->min = new_data.min;
 	policy->max = new_data.max;
 
-	enable_oc = policy->enable_oc;
 	if (enable_oc != 1) {
 		unsigned int cpu = policy->cpu;
 		int max = 0;
