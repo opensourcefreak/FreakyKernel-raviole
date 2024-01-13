@@ -32,7 +32,7 @@
 #include <trace/events/power.h>
 #include <trace/hooks/cpufreq.h>
 
-unsigned int enable_oc = 0;
+bool user_has_tampered = false;
 
 #define LITTLE_DEFAULT_FREQ 1803000
 #define MIDDLE_DEFAULT_FREQ 2253000
@@ -606,8 +606,6 @@ EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
  *                          SYSFS INTERFACE                          *
  *********************************************************************/
 
-module_param(enable_oc, int, 0644);
-
 static ssize_t show_boost(struct kobject *kobj,
 			  struct kobj_attribute *attr, char *buf)
 {
@@ -757,6 +755,7 @@ static ssize_t store_##file_name					\
 		return -EINVAL;						\
 									\
 	ret = freq_qos_update_request(policy->object##_freq_req, val);\
+	user_has_tampered = true;				\
 	return ret >= 0 ? count : ret;					\
 }
 
@@ -2515,7 +2514,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	policy->min = new_data.min;
 	policy->max = new_data.max;
 
-	if (enable_oc != 1) {
+	if (!user_has_tampered) {
 		unsigned int cpu = policy->cpu;
 		int max = 0;
 //		pr_debug("%s [cleanslate_policy] new min and max freqs are %u - %u kHz\n",__func__,
