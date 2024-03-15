@@ -2,7 +2,7 @@
 VERSION = 5
 PATCHLEVEL = 10
 SUBLEVEL = 177
-EXTRAVERSION = -FreakyKernel-raviole_V1.0-RELEASE
+EXTRAVERSION = -FreakyKernel-raviole_V1.1-RELEASE
 # BETA = Builds for bugsquashing that i will make publicly avalible
 # RELEASE = Release builds
 
